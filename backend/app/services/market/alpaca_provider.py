@@ -254,7 +254,7 @@ class AlpacaProvider:
                     await asyncio.gather(*tasks, return_exceptions=True)
                 except Exception:  # noqa
                     pass
-                await asyncio.sleep(3)  # Poll all tickers every 3 seconds in parallel
+                await asyncio.sleep(5)  # Poll all tickers every 5 seconds in parallel to avoid 200/min rate limit
 
     async def _fetch_latest_trade(self, client: httpx.AsyncClient, headers: dict[str, str], ticker: str) -> None:
         """Fetch the latest trade for a single ticker and update the price cache."""

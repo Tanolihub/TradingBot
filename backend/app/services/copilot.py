@@ -30,8 +30,10 @@ class CopilotService:
         from app.services.indicators import IndicatorService
         ind_svc = IndicatorService(self.provider)
 
+        from app.services.trading import ALLOWED_TICKERS
+        
         quotes_and_signals = {}
-        for ticker in ["AAPL", "MSFT", "TSLA", "NVDA", "AMZN"]:
+        for ticker in ALLOWED_TICKERS:
             q = price_cache.get(ticker)
             if q:
                 # Get history to grab last indicator values
