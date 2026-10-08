@@ -1,0 +1,17 @@
+.env
+.env.local
+.env.*.local
+*.db
+*.sqlite
+*.sqlite3
+backend/tradingbot.db
+__pycache__/
+.venv/
+node_modules/
+.next/
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.tsbuildinfo
+EOF

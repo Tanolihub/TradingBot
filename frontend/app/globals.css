@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-ink font-sans antialiased overflow-hidden;
+    background: radial-gradient(circle at center, rgba(207,248,0,0.35) 0%, #000000 75%, #000000 100%);
+    background-color: #000000;
+    /* Use exactly 100dvh and hide scroll to enable app-like layout */
+    height: 100dvh;
+    margin: 0;
+  }
+  .bg-panel {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .glow-radial {
+    background: radial-gradient(60% 50% at 50% 0%, rgba(207,248,0,0.10), transparent 70%);
+  }
+}
+
+/* Tick flash animations */
+@keyframes tick-up {
+  from { background-color: rgba(34, 197, 94, 0.35); }
+  to { background-color: transparent; }
+}
+@keyframes tick-down {
+  from { background-color: rgba(239, 68, 68, 0.35); }
+  to { background-color: transparent; }
+}
+
+.tick-up {
+  animation: tick-up 500ms ease-out;
+}
+.tick-down {
+  animation: tick-down 500ms ease-out;
+}
+
+@media (prefers-reduced-motion) {
+  .tick-up {
+    animation: none;
+    color: #22c55e;
+  }
+  .tick-down {
+    animation: none;
+    color: #ef4444;
+  }
+}
+
+/* Custom Scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(207, 248, 0, 0.2);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(207, 248, 0, 0.5);
+}
