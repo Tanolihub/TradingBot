@@ -28,8 +28,8 @@ def upgrade() -> None:
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('cash', sa.Numeric(precision=18, scale=4), nullable=False),
         sa.Column('starting_cash', sa.Numeric(precision=18, scale=4), nullable=False),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-        sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
+        sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
         sa.CheckConstraint('cash >= 0', name='cash_positive_check'),
         sa.PrimaryKeyConstraint('id')
     )
@@ -59,7 +59,7 @@ def upgrade() -> None:
         sa.Column('role', sa.String(length=20), nullable=False),
         sa.Column('content', sa.String(), nullable=False),
         sa.Column('payload', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
         sa.ForeignKeyConstraint(['portfolio_id'], ['portfolios.id'], ),
         sa.PrimaryKeyConstraint('id')
     )
@@ -79,7 +79,7 @@ def upgrade() -> None:
         sa.Column('source', sa.String(length=20), nullable=False),
         sa.Column('chat_message_id', sa.Integer(), nullable=True),
         sa.Column('idempotency_key', sa.String(length=255), nullable=True),
-        sa.Column('executed_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+        sa.Column('executed_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
         sa.ForeignKeyConstraint(['chat_message_id'], ['chat_messages.id'], ),
         sa.ForeignKeyConstraint(['portfolio_id'], ['portfolios.id'], ),
         sa.PrimaryKeyConstraint('id'),
@@ -102,7 +102,7 @@ def upgrade() -> None:
     # equity_snapshots
     op.create_table(
         'equity_snapshots',
-        sa.Column('ts', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+        sa.Column('ts', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
         sa.Column('portfolio_id', sa.Integer(), nullable=False),
         sa.Column('equity', sa.Numeric(precision=18, scale=4), nullable=False),
         sa.Column('cash', sa.Numeric(precision=18, scale=4), nullable=False),
