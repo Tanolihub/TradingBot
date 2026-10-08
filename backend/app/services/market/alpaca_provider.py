@@ -246,46 +246,52 @@ class AlpacaProvider:
     async def _rest_polling_loop(self) -> None:
         """Fallback: poll Alpaca REST API for latest trades when WS is unavailable."""
         headers = {"APCA-API-KEY-ID": self.api_key, "APCA-API-SECRET-KEY": self.api_secret}
-        while self._running:
-            try:
-                async with httpx.AsyncClient(timeout=10.0) as client:
-                    for ticker in list(self.tickers):
-                        try:
-                            resp = await client.get(
-                                f"{self._base_url}/v2/stocks/{ticker}/trades/latest",
-                                params={"feed": "iex"},
-                                headers=headers
-                            )
-                            if resp.status_code != 200:
-                                continue
-                            data = resp.json()
-                            trade_data = data.get("trade", {})
-                            if not trade_data:
-                                continue
-                            price = trade_data["p"]
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            while self._running:
+                try:
+                    # Fetch all tickers CONCURRENTLY (parallel) to avoid sequential delays
+                    tasks = [self._fetch_latest_trade(client, headers, ticker) for ticker in list(self.tickers)]
+                    await asyncio.gather(*tasks, return_exceptions=True)
+                except Exception:  # noqa
+                    pass
+                await asyncio.sleep(3)  # Poll all tickers every 3 seconds in parallel
 
-                            prev_close = self._prev_closes.get(ticker, price)
-                            change = price - prev_close
-                            change_pct = (change / prev_close * 100) if prev_close > 0 else 0.0
+    async def _fetch_latest_trade(self, client: httpx.AsyncClient, headers: dict[str, str], ticker: str) -> None:
+        """Fetch the latest trade for a single ticker and update the price cache."""
+        try:
+            resp = await client.get(
+                f"{self._base_url}/v2/stocks/{ticker}/trades/latest",
+                params={"feed": "iex"},
+                headers=headers
+            )
+            if resp.status_code != 200:
+                return
+            data = resp.json()
+            trade_data = data.get("trade", {})
+            if not trade_data:
+                return
+            price = float(trade_data["p"])
 
-                            now = datetime.now(UTC)
-                            tick = Tick(
-                                ticker=ticker,
-                                price=price,
-                                change=round(change, 2),
-                                change_pct=round(change_pct, 2),
-                                ts=now
-                            )
-                            price_cache.update(ticker, QuoteSnapshot(
-                                price=price,
-                                change=round(change, 2),
-                                change_pct=round(change_pct, 2),
-                                ts=now
-                            ))
-                            if self.on_tick:
-                                await self.on_tick(tick)
-                        except Exception:  # noqa: BLE001
-                            pass
-            except Exception:  # noqa: BLE001
-                pass
-            await asyncio.sleep(5)  # Poll every 5 seconds
+            prev_close = self._prev_closes.get(ticker, price)
+            change = price - prev_close
+            change_pct = (change / prev_close * 100) if prev_close > 0 else 0.0
+
+            now = datetime.now(UTC)
+            tick = Tick(
+                ticker=ticker,
+                price=price,
+                change=round(change, 2),
+                change_pct=round(change_pct, 2),
+                ts=now
+            )
+            price_cache.update(ticker, QuoteSnapshot(
+                price=round(price, 2),
+                change=round(change, 2),
+                change_pct=round(change_pct, 2),
+                ts=now
+            ))
+            if self.on_tick:
+                await self.on_tick(tick)
+        except Exception:  # noqa
+            pass
+
