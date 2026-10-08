@@ -9,12 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.models.portfolio import ChatMessage
 from app.schemas.chat import AiResponse, TradeReport
+from app.services.market.base import MarketProvider
 from app.services.market.hub import market_hub
 from app.services.market.price_cache import price_cache
 from app.services.portfolio import PortfolioService
 from app.services.trading import TradingEngine
-
-from app.services.market.base import MarketProvider
 
 logger = logging.getLogger(__name__)
 

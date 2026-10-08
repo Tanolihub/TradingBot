@@ -3,8 +3,8 @@ import json
 import logging
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
-import httpx
 
+import httpx
 import websockets
 from websockets.exceptions import ConnectionClosed
 

@@ -14,9 +14,9 @@ def calc_rsi(series: pd.Series, period: int = 14) -> pd.Series:
     if len(prices) < period + 1:
         return pd.Series(np.nan, index=series.index)
 
-    deltas = np.diff(prices)
-    gains = np.where(deltas > 0, deltas, 0.0)
-    losses = np.where(deltas < 0, -deltas, 0.0)
+    deltas = np.diff(prices)  # type: ignore
+    gains = np.where(deltas > 0, deltas, 0.0)  # type: ignore
+    losses = np.where(deltas < 0, -deltas, 0.0)  # type: ignore
 
     avg_gain = np.full_like(prices, np.nan, dtype=float)
     avg_loss = np.full_like(prices, np.nan, dtype=float)

@@ -4,12 +4,12 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import get_market_provider
 from app.core.db import get_db
 from app.models.portfolio import ChatMessage
 from app.schemas.chat import ChatRequest, ChatResponse
-from app.api.deps import get_market_provider
-from app.services.market.base import MarketProvider
 from app.services.copilot import CopilotService
+from app.services.market.base import MarketProvider
 
 router = APIRouter()
 
