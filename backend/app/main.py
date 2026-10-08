@@ -10,11 +10,10 @@ from app.api.deps import set_market_provider
 from app.core.config import settings
 from app.core.db import AsyncSessionLocal
 from app.core.seed import seed_database
+from app.services.market.alpaca_provider import AlpacaProvider
 from app.services.market.base import MarketProvider
 from app.services.market.hub import market_hub
 from app.services.market.mock_provider import MockProvider
-from app.services.market.polygon_provider import PolygonProvider
-from app.services.market.alpaca_provider import AlpacaProvider
 
 
 @asynccontextmanager
@@ -28,22 +27,19 @@ async def lifespan(app: FastAPI) -> typing.AsyncGenerator[None, None]:
 
     # Start Provider
     provider: MarketProvider
-    if settings.MARKET_DATA_PROVIDER == "polygon":
-        provider = PolygonProvider()
-    elif settings.MARKET_DATA_PROVIDER == "alpaca":
+    if settings.MARKET_DATA_PROVIDER == "alpaca":
         provider = AlpacaProvider()
     else:
         provider = MockProvider()
 
     provider.on_tick = market_hub.on_tick
-    # Pass hub's update status down to polygon provider if applicable
+    # Pass hub's update status down to market provider if applicable
     if hasattr(provider, 'on_status_change'):
         provider.on_status_change = market_hub.update_status
 
     set_market_provider(provider)
 
-    # We should subscribe to seed tickers but we don't have DB context here
-    # For now, start with a mock set of tickers or query the DB
+    # Subscribe to default watchlist tickers
     default_tickers = {"AAPL", "MSFT", "NVDA", "TSLA", "AMZN", "GOOGL", "META", "AMD", "SPY", "QQQ"}
     await provider.start(default_tickers)
 

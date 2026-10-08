@@ -8,16 +8,14 @@ class Settings(BaseSettings):
     DATABASE_URL: str
 
     # Market data
-    MARKET_DATA_PROVIDER: Literal["mock", "polygon", "alpaca"] = "mock"
-    POLYGON_API_KEY: str = ""
-    POLYGON_WS_FEED: str = "delayed.polygon.io"
+    MARKET_DATA_PROVIDER: Literal["mock", "alpaca"] = "alpaca"
     ALPACA_API_KEY: str = ""
     ALPACA_API_SECRET: str = ""
     STALE_PRICE_SECONDS: int = 30
 
     # AI
     GROQ_API_KEY: str = ""
-    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_MODEL: str = "openai/gpt-oss-120b"
     COPILOT_MAX_TRADES_PER_REPLY: int = 5
     AI_AUTO_EXECUTE: bool = True
 

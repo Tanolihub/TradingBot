@@ -31,7 +31,7 @@ NeonPulse AI employs a decoupled, asynchronous architecture optimized for high-t
 ### **Backend** (FastAPI)
 - **Language:** Async Python 3.12
 - **Database:** SQLite via Async SQLAlchemy & Alembic (ORM)
-- **Market Data Feeds:** Alpaca Market Data API v2 (Support for Mock & Polygon providers)
+- **Market Data Feeds:** Alpaca Market Data API v2 (Support for Mock & Alpaca providers)
 - **AI Engine:** Groq API (`openai/gpt-oss-120b`)
 - **Package Management:** `uv`
 
