@@ -29,6 +29,7 @@ class AlpacaProvider:
         self.api_secret = getattr(settings, "ALPACA_API_SECRET", "")
 
         self.on_status_change: Callable[[str, str], Awaitable[None]] | None = None
+        self._prev_closes: dict[str, float] = {}
 
     async def _update_status(self, market: str, feed: str) -> None:
         if self.on_status_change:
@@ -58,17 +59,17 @@ class AlpacaProvider:
         async with httpx.AsyncClient(timeout=10.0) as client:
             for ticker in tickers:
                 try:
-                    # Use the bars endpoint with 1Day timeframe to get latest close
+                    # Fetch last 5 daily bars to get current price and prior day close
                     end = datetime.now(UTC)
-                    start = end - timedelta(days=5)
+                    start = end - timedelta(days=10)
                     resp = await client.get(
                         f"{self._base_url}/v2/stocks/{ticker}/bars",
                         params={
                             "timeframe": "1Day",
                             "start": start.strftime('%Y-%m-%dT%H:%M:%SZ'),
                             "end": end.strftime('%Y-%m-%dT%H:%M:%SZ'),
-                            "limit": 1,
-                            "sort": "desc",
+                            "limit": 5,
+                            "sort": "asc",
                             "feed": "iex"
                         },
                         headers=headers
@@ -79,11 +80,17 @@ class AlpacaProvider:
                     data = resp.json()
                     bars_list = data.get("bars", [])
                     if bars_list:
-                        prev_close = bars_list[0]["c"]
+                        current_price = bars_list[-1]["c"]
+                        prev_close = bars_list[-2]["c"] if len(bars_list) >= 2 else current_price
+                        self._prev_closes[ticker] = prev_close
+                        
+                        change = current_price - prev_close
+                        change_pct = (change / prev_close * 100) if prev_close > 0 else 0.0
+
                         price_cache.update(ticker, QuoteSnapshot(
-                            price=prev_close,
-                            change=0.0,
-                            change_pct=0.0,
+                            price=round(current_price, 2),
+                            change=round(change, 2),
+                            change_pct=round(change_pct, 2),
                             ts=datetime.now(UTC)
                         ))
                 except Exception as e:
@@ -192,10 +199,8 @@ class AlpacaProvider:
                                     ticker = event["S"]
                                     price = event["p"]
 
-                                    # Calculate change
-                                    cached = price_cache.get(ticker)
-                                    prev_close = cached.price - cached.change if cached else price
-
+                                    # Calculate change against actual prior day close
+                                    prev_close = self._prev_closes.get(ticker, price)
                                     change = price - prev_close
                                     change_pct = (change / prev_close * 100) if prev_close > 0 else 0.0
 
@@ -259,8 +264,7 @@ class AlpacaProvider:
                                 continue
                             price = trade_data["p"]
 
-                            cached = price_cache.get(ticker)
-                            prev_close = cached.price - cached.change if cached else price
+                            prev_close = self._prev_closes.get(ticker, price)
                             change = price - prev_close
                             change_pct = (change / prev_close * 100) if prev_close > 0 else 0.0
 

@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str
+    DATABASE_URL: str = "sqlite+aiosqlite:///./tradingbot.db"
 
     # Market data
     MARKET_DATA_PROVIDER: Literal["mock", "alpaca"] = "alpaca"
@@ -28,4 +28,4 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-settings = Settings(DATABASE_URL="") # type: ignore
+settings = Settings()
